@@ -1,0 +1,42 @@
+{
+  "mappings": {
+    "properties": {
+      "id": { "type": "keyword" },
+      "title": {
+        "type": "text",
+        "analyzer": "standard",
+        "fields": {
+          "keyword": {
+            "type": "keyword"
+          }
+        }
+      },
+      "description": {
+        "type": "text",
+        "analyzer": "standard"
+      },
+      "tags": {
+        "type": "keyword"
+      },
+      "skills": {
+        "type": "keyword"
+      },
+      "url": { "type": "keyword" },
+      "duration": { "type": "integer" },
+      "created_at": { "type": "date" },
+      "updated_at": { "type": "date" }
+    }
+  },
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "analysis": {
+      "analyzer": {
+        "standard": {
+          "type": "standard",
+          "stopwords": "_english_"
+        }
+      }
+    }
+  }
+} 

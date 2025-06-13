@@ -1,0 +1,35 @@
+# Elasticsearch configuration for Knowledge Portal
+
+# Cluster
+cluster.name: knowledge-portal
+node.name: knowledge-portal-node-1
+discovery.type: single-node
+
+# Network
+network.host: 0.0.0.0
+http.port: 9200
+
+# Paths
+path.data: /usr/share/elasticsearch/data
+path.logs: /usr/share/elasticsearch/logs
+
+# Memory
+bootstrap.memory_lock: false
+
+# Security
+xpack.security.enabled: false
+
+# Cross-origin
+http.cors.enabled: true
+http.cors.allow-origin: "*"
+http.cors.allow-methods: OPTIONS, HEAD, GET, POST, PUT, DELETE
+http.cors.allow-headers: X-Requested-With, X-Auth-Token, Content-Type, Content-Length, Authorization
+
+# Performance
+indices.memory.index_buffer_size: 10%
+indices.queries.cache.size: 5%
+search.max_buckets: 10000
+thread_pool.write.queue_size: 1000
+
+# Monitoring
+xpack.monitoring.collection.enabled: true 

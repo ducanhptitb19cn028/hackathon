@@ -1,0 +1,41 @@
+# Frontend
+knowledge_portal_frontend/node_modules/
+knowledge_portal_frontend/.pnp
+knowledge_portal_frontend/.pnp.js
+knowledge_portal_frontend/coverage/
+knowledge_portal_frontend/build/
+knowledge_portal_frontend/dist/
+knowledge_portal_frontend/.env*
+knowledge_portal_frontend/npm-debug.log*
+knowledge_portal_frontend/yarn-debug.log*
+knowledge_portal_frontend/yarn-error.log*
+knowledge_portal_frontend/.eslintcache
+knowledge_portal_frontend/.cache
+
+# Backend
+knowledge_portal_backend/__pycache__/
+knowledge_portal_backend/**/__pycache__/
+knowledge_portal_backend/*.py[cod]
+knowledge_portal_backend/venv/
+knowledge_portal_backend/env/
+knowledge_portal_backend/.env*
+knowledge_portal_backend/logs/
+knowledge_portal_backend/*.log
+knowledge_portal_backend/*.sqlite3
+knowledge_portal_backend/*.db
+knowledge_portal_backend/data/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.*
+!.env.example

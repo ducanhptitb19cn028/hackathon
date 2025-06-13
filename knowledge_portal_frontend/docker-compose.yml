@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  # Development service
+  knowledge-portal-dev:
+    image: node:18-alpine
+    container_name: knowledge-portal-dev
+    working_dir: /app
+    volumes:
+      - .:/app
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - REACT_APP_API_URL=http://localhost:8080
+      - CI=false
+    command: sh -c "npm install && npm start"
+    networks:
+      - app-network
+
+  # Production service
+  knowledge-portal-prod:
+    build:
+      context: .
+    container_name: knowledge-portal-prod
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=production
+      - REACT_APP_API_URL=https://api.knowledge-portal.com
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # Reverse proxy for development
+  nginx-dev:
+    image: nginx:alpine
+    container_name: knowledge-portal-nginx-dev
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.dev.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - knowledge-portal-dev
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=/agent/api
+      - VITE_BASE_PATH=/agent/portal
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run dev
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge 

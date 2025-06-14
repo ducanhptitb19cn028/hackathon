@@ -22,7 +22,7 @@ const VideoSearch: React.FC = () => {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<VideoSearchResult[]>([]);
-  const [answer, setAnswer] = useState<string>('');
+  const [answer, setAnswer] = useState<VideoSearchResult | null>(null);
   const [error, setError] = useState<string>('');
 
   const handleSearch = async () => {
@@ -101,11 +101,17 @@ const VideoSearch: React.FC = () => {
         <Card sx={{ mb: 4 }}>
           <CardContent>
             <Typography variant="h6" gutterBottom>
-              Answer
+              AI Generated Answer
             </Typography>
             <Typography variant="body1" component="div" sx={{ whiteSpace: 'pre-line' }}>
-              {answer}
+              {answer.text}
             </Typography>
+            <Chip 
+              label={videoSearchService.formatSimilarity(answer.similarity)} 
+              size="small" 
+              color="primary" 
+              sx={{ mt: 2 }}
+            />
           </CardContent>
         </Card>
       )}
@@ -114,7 +120,7 @@ const VideoSearch: React.FC = () => {
       {results.length > 0 && !loading && (
         <>
           <Typography variant="h6" gutterBottom>
-            Relevant Segments
+            Relevant Segments ({results.length})
           </Typography>
           <List>
             {results.map((result) => (
@@ -142,7 +148,7 @@ const VideoSearch: React.FC = () => {
                         <Chip
                           size="small"
                           icon={<PersonIcon />}
-                          label={result.speaker}
+                          label={`Speaker ${result.speaker}`}
                           variant="outlined"
                         />
                       )}
@@ -159,7 +165,7 @@ const VideoSearch: React.FC = () => {
                         {result.text}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        Relevance: {Math.round(result.similarity * 100)}%
+                        Relevance: {videoSearchService.formatSimilarity(result.similarity)}
                       </Typography>
                     </>
                   }

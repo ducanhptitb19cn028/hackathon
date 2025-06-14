@@ -65,6 +65,9 @@ const Navbar = () => {
               <Button color="inherit" component={Link} to="/search">
                 Search
               </Button>
+              <Button color="inherit" component={Link} to="/video-content-search">
+                Video Search
+              </Button>
               <Button color="inherit" component={Link} to="/learning-path">
                 Learning Paths
               </Button>

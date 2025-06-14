@@ -8,6 +8,7 @@ import Layout from './components/Layout';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import Search from './pages/Search';
+import VideoContentSearch from './pages/VideoContentSearch';
 import Home from './pages/Home';
 import Profile from './pages/Profile';
 import Quiz from './pages/Quiz';
@@ -48,6 +49,14 @@ const App: React.FC = () => {
               }
             />
             <Route
+              path="/video-content-search"
+              element={
+                <PrivateRoute>
+                  <VideoContentSearch />
+                </PrivateRoute>
+              }
+            />
+            <Route
               path="/profile"
               element={
                 <PrivateRoute>
@@ -64,7 +73,15 @@ const App: React.FC = () => {
               }
             />
             <Route
-              path="/quiz/:videoId"
+              path="/quiz/take/:quizId"
+              element={
+                <PrivateRoute>
+                  <Quiz />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/quiz/video/:videoId"
               element={
                 <PrivateRoute>
                   <Quiz />

@@ -22,7 +22,7 @@ import { quizService, Quiz as QuizType } from '../services/quiz.service';
 import { AppDispatch } from '../store';
 
 const Quiz: React.FC = () => {
-  const { videoId } = useParams<{ videoId?: string }>();
+  const { videoId, quizId } = useParams<{ videoId?: string; quizId?: string }>();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { currentQuiz, currentAttempt } = useSelector((state: RootState) => state.quiz);
@@ -40,9 +40,21 @@ const Quiz: React.FC = () => {
     const loadContent = async () => {
       setLoading(true);
       try {
-        if (videoId) {
+        if (quizId) {
+          console.log('Loading existing quiz with ID:', quizId);
+          // Load existing quiz by quiz ID
+          const existingQuiz = await quizService.getQuizById(quizId);
+          console.log('Loaded existing quiz:', {
+            quiz_id: existingQuiz.id,
+            title: existingQuiz.title,
+            num_questions: existingQuiz.questions.length
+          });
+          dispatch(setCurrentQuiz(existingQuiz));
+          dispatch(startQuiz());
+          setTimeLeft(existingQuiz.time_limit || 600);
+        } else if (videoId) {
           console.log('Generating quiz for video:', videoId);
-          // Load specific video quiz
+          // Generate new quiz for video ID
           const videoQuiz = await quizService.generateQuiz({
             video_id: videoId,
             difficulty_level: 'medium',
@@ -71,7 +83,7 @@ const Quiz: React.FC = () => {
     };
 
     loadContent();
-  }, [videoId, dispatch]);
+  }, [videoId, quizId, dispatch]);
 
   useEffect(() => {
     let timer: NodeJS.Timeout | null = null;
@@ -383,7 +395,7 @@ const Quiz: React.FC = () => {
                     </Box>
                     <Button
                       variant="contained"
-                      onClick={() => navigate(`/quiz/${quiz.id}`)}
+                      onClick={() => navigate(`/quiz/take/${quiz.id}`)}
                     >
                       Start Quiz
                     </Button>
@@ -401,7 +413,7 @@ const Quiz: React.FC = () => {
     return renderResults();
   }
 
-  return videoId ? renderQuiz() : renderQuizList();
+  return (quizId || videoId) ? renderQuiz() : renderQuizList();
 };
 
 export default Quiz;

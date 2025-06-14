@@ -1,5 +1,6 @@
 import { SearchResult } from '../types/models';
 import { apiService } from './api.service';
+import { videoSearchService, VideoSearchResponse } from './video-search.service';
 
 export class SearchService {
   private readonly basePath = '/api/v1';
@@ -18,15 +19,12 @@ export class SearchService {
     }
   }
 
-  async searchVideoContent(query: string): Promise<SearchResult[]> {
+  async searchVideoContent(query: string): Promise<VideoSearchResponse> {
     try {
-      const response = await apiService.post<SearchResult[]>(`${this.basePath}/video-content-search/query`, {
-        query
-      });
-      return response.data || [];
+      return await videoSearchService.searchVideo(query);
     } catch (error) {
       console.error('Video content search failed:', error);
-      return [];
+      return { results: [] };
     }
   }
 }

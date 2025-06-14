@@ -122,6 +122,61 @@ async def list_available_quizzes(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/{quiz_id}", response_model=Quiz)
+async def get_quiz_by_id(quiz_id: int, db: AsyncSession = Depends(get_db)):
+    """
+    Get a specific quiz by its ID.
+    """
+    logger.info(f"Fetching quiz with ID: {quiz_id}")
+    
+    # Try to get cached quiz first
+    cache_key = f"quiz:{quiz_id}"
+    cached_quiz = await redis_client.get_json(cache_key)
+    
+    if cached_quiz:
+        logger.info(f"Found cached quiz with ID: {quiz_id}")
+        return Quiz(**cached_quiz)
+    
+    try:
+        # Query quiz from database
+        query = select(QuizModel).where(QuizModel.id == quiz_id)
+        result = await db.execute(query)
+        quiz_db = result.scalar_one_or_none()
+        
+        if not quiz_db:
+            logger.error(f"Quiz with ID {quiz_id} not found")
+            raise HTTPException(
+                status_code=404,
+                detail=f"Quiz with ID {quiz_id} not found"
+            )
+        
+        # Convert database model to response type
+        quiz = Quiz(
+            id=str(quiz_db.id),
+            title=quiz_db.title,
+            description=quiz_db.description,
+            video_id=str(quiz_db.video_id),
+            difficulty_level=quiz_db.difficulty_level,
+            questions=[QuizQuestion(**q) for q in quiz_db.questions],
+            passing_score=quiz_db.passing_score,
+            time_limit=quiz_db.time_limit
+        )
+        
+        # Cache the quiz for 1 hour
+        await redis_client.set_json(cache_key, quiz.dict(), expire=3600)
+        logger.info(f"Cached quiz with ID: {quiz_id}")
+        
+        return quiz
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching quiz {quiz_id}: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error fetching quiz: {str(e)}"
+        )
+
 @router.post("/generate", response_model=Quiz)
 async def generate_quiz(request: QuizRequest, db: AsyncSession = Depends(get_db)):
     """

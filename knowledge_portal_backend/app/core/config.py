@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     RELOAD: bool = False
     
-    # CORS Configuration
+    # CORS Configuration (now handled by regex in main.py)
     BACKEND_CORS_ORIGINS: List[str] = [
         "http://localhost:3000",  # React frontend
         "http://localhost:8000",  # FastAPI backend

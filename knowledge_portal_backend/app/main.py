@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from fastapi.openapi.utils import get_openapi
 import os
 import logging
+import re
 
 from app.core.config import settings
 from app.api.v1.api import api_router
@@ -38,10 +39,37 @@ def custom_openapi():
 
 app.openapi = custom_openapi
 
-# Set up CORS middleware
+# Custom CORS origin checker for ngrok URLs
+def is_allowed_origin(origin: str) -> bool:
+    """Check if the origin is allowed, including ngrok URLs."""
+    # Allow localhost origins
+    localhost_patterns = [
+        "http://localhost:3000",
+        "http://localhost:8000", 
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:8000"
+    ]
+    
+    if origin in localhost_patterns:
+        return True
+    
+    # Allow ngrok URLs
+    ngrok_patterns = [
+        r"https://.*\.ngrok-free\.app",
+        r"https://.*\.ngrok\.io",
+        r"https://.*\.ngrok\.app"
+    ]
+    
+    for pattern in ngrok_patterns:
+        if re.match(pattern, origin):
+            return True
+    
+    return False
+
+# Set up CORS middleware with custom origin validation
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.BACKEND_CORS_ORIGINS,
+    allow_origin_regex=r"https://.*\.ngrok-free\.app|https://.*\.ngrok\.io|https://.*\.ngrok\.app|http://localhost:.*|http://127\.0\.0\.1:.*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

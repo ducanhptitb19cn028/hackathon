@@ -7,7 +7,7 @@ export class SearchService {
 
   async search(query: string): Promise<SearchResult[]> {
     try {
-      const response = await apiService.post<SearchResult[]>(`${this.basePath}/video-search/query`, {
+      const response = await apiService.post<SearchResult[]>(`${this.basePath}/video-content-search/query`, {
         query,
         page: 1,
         per_page: 10

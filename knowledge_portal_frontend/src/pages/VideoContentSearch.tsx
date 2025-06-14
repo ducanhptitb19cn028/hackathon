@@ -26,6 +26,7 @@ import {
   VideoLibrary as VideoIcon,
 } from '@mui/icons-material';
 import { videoSearchService, VideoSearchResult, VideoSearchResponse } from '../services/video-search.service';
+import StreamingText from '../components/StreamingText';
 
 const VideoContentSearch: React.FC = () => {
   const [query, setQuery] = useState('');
@@ -72,9 +73,7 @@ const VideoContentSearch: React.FC = () => {
           sx={{ ml: 2 }}
         />
       </Box>
-      <Typography variant="body1" sx={{ lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
-        {answer.text}
-      </Typography>
+      <StreamingText text={answer.text} />
     </Paper>
   );
 

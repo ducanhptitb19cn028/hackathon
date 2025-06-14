@@ -17,6 +17,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import PersonIcon from '@mui/icons-material/Person';
 import { videoSearchService, VideoSearchResult } from '../../services/video-search.service';
+import StreamingText from '../StreamingText';
 
 const VideoSearch: React.FC = () => {
   const [query, setQuery] = useState('');
@@ -103,9 +104,7 @@ const VideoSearch: React.FC = () => {
             <Typography variant="h6" gutterBottom>
               AI Generated Answer
             </Typography>
-            <Typography variant="body1" component="div" sx={{ whiteSpace: 'pre-line' }}>
-              {answer.text}
-            </Typography>
+            <StreamingText text={answer.text} />
             <Chip 
               label={videoSearchService.formatSimilarity(answer.similarity)} 
               size="small" 

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List, Any
 
 from pydantic import BaseModel, EmailStr, ConfigDict
 
@@ -10,6 +10,8 @@ class UserBase(BaseModel):
     is_active: Optional[bool] = True
     is_superuser: bool = False
     full_name: Optional[str] = None
+    skill_level: Optional[str] = None  # beginner, intermediate, advanced
+    interests: Optional[List[str]] = None  # List of user interests
 
 # Properties to receive via API on creation
 class UserCreate(UserBase):
@@ -19,6 +21,12 @@ class UserCreate(UserBase):
 # Properties to receive via API on update
 class UserUpdate(UserBase):
     password: Optional[str] = None
+
+# Properties for updating user profile specifically
+class UserProfileUpdate(BaseModel):
+    full_name: Optional[str] = None
+    skill_level: Optional[str] = None
+    interests: Optional[List[str]] = None
 
 # Properties shared by models stored in DB
 class UserInDBBase(UserBase):

@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Dict
 from fastapi import APIRouter, Depends, HTTPException, Security, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import ValidationError
@@ -8,6 +8,7 @@ from app.crud.user import user_crud
 from app.models.user import User
 from app.schemas.user import UserUpdate, User as UserSchema
 from app.schemas.profile import ProfileUpdate
+from app.schemas.auth import UserProfileUpdate
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -42,15 +43,20 @@ async def update_user_profile(
                 detail="User not found"
             )
         
-        update_data = profile_in.model_dump(exclude_unset=True)
-        logger.info(f"Processed update data for user {user_id}: {update_data}")
+        # Convert ProfileUpdate to UserProfileUpdate for CRUD
+        profile_update = UserProfileUpdate(
+            full_name=profile_in.full_name,
+            skill_level=profile_in.skill_level,
+            interests=profile_in.interests
+        )
         
-        updated_user = await user_crud.update(
+        logger.info(f"Processed update data for user {user_id}: {profile_update.model_dump(exclude_unset=True)}")
+        
+        updated_user = await user_crud.update_profile(
             db,
             db_obj=user,
-            obj_in=update_data
+            profile_in=profile_update
         )
-        await db.commit()
         logger.info(f"Successfully updated profile for user {user_id}")
         return updated_user
 
@@ -91,4 +97,65 @@ async def get_user_profile(
             detail="Not enough permissions to access this profile"
         )
     
-    return user 
+    return user
+
+@router.get("/admin/verify-profile-columns", response_model=Dict[str, bool])
+async def verify_profile_columns(
+    current_user: User = Security(deps.get_current_active_user, scopes=[]),
+    db: AsyncSession = Depends(deps.get_db),
+) -> Any:
+    """
+    Verify that profile columns exist in the users table.
+    Admin only endpoint.
+    """
+    if not current_user.is_superuser:
+        raise HTTPException(
+            status_code=403,
+            detail="Not enough permissions. Admin access required."
+        )
+    
+    try:
+        result = await user_crud.verify_profile_columns(db)
+        logger.info(f"Profile columns verification result: {result}")
+        return result
+    except Exception as e:
+        logger.error(f"Error verifying profile columns: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to verify profile columns"
+        )
+
+@router.post("/admin/ensure-profile-columns", response_model=Dict[str, str])
+async def ensure_profile_columns(
+    current_user: User = Security(deps.get_current_active_user, scopes=[]),
+    db: AsyncSession = Depends(deps.get_db),
+) -> Any:
+    """
+    Ensure profile columns exist in the users table, create them if they don't.
+    Admin only endpoint.
+    """
+    if not current_user.is_superuser:
+        raise HTTPException(
+            status_code=403,
+            detail="Not enough permissions. Admin access required."
+        )
+    
+    try:
+        result = await user_crud.ensure_profile_columns(db)
+        logger.info(f"Profile columns ensure result: {result}")
+        
+        if 'error' in result:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to ensure profile columns: {result['error']}"
+            )
+        
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error ensuring profile columns: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to ensure profile columns"
+        ) 

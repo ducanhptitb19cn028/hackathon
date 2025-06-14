@@ -10,6 +10,7 @@ from app.api.v1.api import api_router
 from app.core.redis_client import redis_client
 from app.core.elasticsearch_client import es_client
 from app.core.database import init_db
+from app.core.startup import startup_tasks
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -66,6 +67,12 @@ async def startup_event():
         logger.info("Initializing Elasticsearch...")
         await es_client.init()
         logger.info("Elasticsearch initialized successfully")
+        
+        # Run startup tasks (including profile field verification)
+        logger.info("Running startup tasks...")
+        await startup_tasks()
+        logger.info("Startup tasks completed")
+        
     except Exception as e:
         logger.error(f"Error during startup: {e}")
         raise

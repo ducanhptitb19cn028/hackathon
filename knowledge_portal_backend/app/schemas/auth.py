@@ -19,6 +19,8 @@ class UserBase(BaseModel):
     is_superuser: bool = False
     full_name: Optional[str] = None
     username: Optional[str] = None
+    skill_level: Optional[str] = None  # beginner, intermediate, advanced
+    interests: Optional[List[str]] = None  # List of user interests
 
 class UserCreate(UserBase):
     email: EmailStr
@@ -28,6 +30,11 @@ class UserCreate(UserBase):
 
 class UserUpdate(UserBase):
     password: Optional[str] = None
+
+class UserProfileUpdate(BaseModel):
+    full_name: Optional[str] = None
+    skill_level: Optional[str] = None
+    interests: Optional[List[str]] = None
 
 class UserInDBBase(UserBase):
     id: Optional[int] = None
@@ -55,6 +62,8 @@ class UserResponse(BaseModel):
     full_name: str
     is_active: bool
     is_superuser: bool
+    skill_level: Optional[str] = None
+    interests: Optional[List[str]] = None
 
     class Config:
         from_attributes = True 

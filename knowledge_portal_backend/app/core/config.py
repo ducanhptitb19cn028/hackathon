@@ -37,7 +37,6 @@ class Settings(BaseSettings):
     POSTGRES_PORT: int = 5432
     POSTGRES_HOST: str = "localhost"  # Alias for POSTGRES_SERVER
     DATABASE_URI: Optional[PostgresDsn] = None
-    SQLALCHEMY_DATABASE_URI: Optional[str] = None
 
     @validator("DATABASE_URI", pre=True)
     def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
@@ -52,11 +51,9 @@ class Settings(BaseSettings):
             path=values.get("POSTGRES_DB") or ""  # Remove the leading slash
         )
 
-    @validator("SQLALCHEMY_DATABASE_URI", pre=True)
-    def assemble_sqlalchemy_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
-        if isinstance(v, str):
-            return v
-        return f"postgresql://{values.get('POSTGRES_USER')}:{values.get('POSTGRES_PASSWORD')}@{values.get('POSTGRES_HOST')}:{values.get('POSTGRES_PORT')}/{values.get('POSTGRES_DB')}"
+    @property
+    def SQLALCHEMY_DATABASE_URI(self) -> str:
+        return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
 
     # Redis Configuration
     REDIS_HOST: str = "localhost"
@@ -84,7 +81,7 @@ class Settings(BaseSettings):
     GOOGLE_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/google/callback"
 
     # Video Search Configuration
-    VIDEO_SEARCH_API_URL: str = "http://109.237.68.137:80/retriever/query"
+    VIDEO_SEARCH_API_URL: str = "http://109.237.68.137:80"
     VIDEO_SEARCH_API_KEY: Optional[str] = None
     VIDEO_SEARCH_MOCK_DATA: bool = True  # Use mock data in development
 

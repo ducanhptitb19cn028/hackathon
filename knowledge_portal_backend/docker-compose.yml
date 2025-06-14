@@ -11,41 +11,64 @@ services:
       - BACKEND_CORS_ORIGINS=["http://localhost:3000"]
       - ROOT_PATH=/agent/api
       - API_V1_STR=/api/v1
-    volumes:
-      - .:/app
-    depends_on:
-      - db
-      - redis
-      - elasticsearch
-
-  db:
-    image: postgres:13
-    environment:
+      - POSTGRES_SERVER=host.docker.internal
+      - POSTGRES_HOST=host.docker.internal
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=knowledge_portal
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=redis_password
+      - ELASTICSEARCH_HOST=elasticsearch
+      - ELASTICSEARCH_PORT=9200
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+      - .:/app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - redis
+      - elasticsearch
 
   redis:
-    image: redis:7-alpine
+    build:
+      context: ./docker/redis
+      dockerfile: Dockerfile
+    environment:
+      - REDIS_PASSWORD=redis_password
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.9.3
-    environment:
-      - discovery.type=single-node
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    build:
+      context: ./docker/elasticsearch
+      dockerfile: Dockerfile
     ports:
       - "9200:9200"
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200 >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
 volumes:
-  postgres_data:
+  redis_data:
   elasticsearch_data:
 
 #     python -m venv venv

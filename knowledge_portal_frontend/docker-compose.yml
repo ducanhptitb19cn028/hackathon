@@ -8,13 +8,15 @@ services:
     working_dir: /app
     volumes:
       - .:/app
+      - /app/node_modules
     ports:
       - "3000:3000"
     environment:
       - NODE_ENV=development
       - REACT_APP_API_URL=http://localhost:8080
       - CI=false
-    command: sh -c "npm install && npm start"
+      - DISABLE_ESLINT_PLUGIN=true
+    command: sh -c "npm config set fetch-timeout 300000 && npm install && npm start"
     networks:
       - app-network
 
@@ -22,12 +24,13 @@ services:
   knowledge-portal-prod:
     build:
       context: .
+      dockerfile: Dockerfile
     container_name: knowledge-portal-prod
     ports:
-      - "80:80"
+      - "3001:80"
     environment:
       - NODE_ENV=production
-      - REACT_APP_API_URL=https://api.knowledge-portal.com
+      - REACT_APP_API_URL=http://localhost:8000
     restart: unless-stopped
     networks:
       - app-network
@@ -45,22 +48,26 @@ services:
     networks:
       - app-network
 
+  # Standalone frontend build
   frontend:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: knowledge-portal-frontend
     ports:
-      - "3000:3000"
+      - "3002:80"
     environment:
-      - VITE_API_URL=/agent/api
-      - VITE_BASE_PATH=/agent/portal
+      - NODE_ENV=production
+      - REACT_APP_API_URL=http://localhost:8000
     volumes:
       - .:/app
       - /app/node_modules
-    command: npm run dev
     networks:
       - app-network
 
 networks:
   app-network:
     driver: bridge 
+
+
+# cd knowledge_portal_backend

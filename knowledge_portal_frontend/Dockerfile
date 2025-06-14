@@ -1,13 +1,19 @@
 # Build stage
-FROM node:16-alpine as build
+FROM node:18-alpine as build
 
 WORKDIR /app
+
+# Set npm configuration for better reliability
+RUN npm config set registry https://registry.npmjs.org/
+RUN npm config set fetch-timeout 300000
+RUN npm config set fetch-retry-mintimeout 20000
+RUN npm config set fetch-retry-maxtimeout 120000
 
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
+# Install dependencies with retry logic
+RUN npm ci --only=production --silent || npm install --silent
 
 # Copy source code
 COPY . .
@@ -15,6 +21,7 @@ COPY . .
 # Build the application (skip linting and CI checks)
 ENV CI=false
 ENV DISABLE_ESLINT_PLUGIN=true
+ENV GENERATE_SOURCEMAP=false
 RUN npm run build
 
 # Production stage
@@ -26,8 +33,8 @@ COPY --from=build /app/build /usr/share/nginx/html
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose port 3000
-EXPOSE 3000
+# Expose port 80 (nginx default)
+EXPOSE 80
 
 # Start nginx
 CMD ["nginx", "-g", "daemon off;"] 
